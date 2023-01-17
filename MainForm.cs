@@ -1,7 +1,5 @@
-﻿
-//Multiple face detection and recognition in real time
+﻿//Multiple face detection and recognition in real time
 //Using EmguCV cross platform .Net wrapper to the Intel OpenCV image processing library for C#.Net
-
 
 using System;
 using System.Collections.Generic;
@@ -32,19 +30,10 @@ namespace MultiFaceRec
         int ContTrain, NumLabels, t;
         string name, names = null;
 
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
-
-        }
 
         private void button1_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Student: " + CurrentStudent + " is now marked as PRESENT");
-        }
-
-        private void label9_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -104,12 +93,14 @@ namespace MultiFaceRec
                     File.AppendAllText(Application.StartupPath + "/TrainedFaces/TrainedLabels.txt", labels.ToArray()[i - 1] + "%");
                 }
 
-                MessageBox.Show(" Student: " + txtStudentID + " registered successfully", "Registration Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                log = "Student: " + txtStudentID + " registered successfully";
+                MessageBox.Show(" Student: " + txtStudentID.Text + " registered successfully", "Registration Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                log = "Student: " + txtStudentID.Text + " registered successfully";
                 txtLog.Text = log;
+                imageBox1.Image = null;
             }
-            catch
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.Message.ToString());
                 MessageBox.Show("Enable the face detection first", "Registration Failed!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
@@ -128,7 +119,6 @@ namespace MultiFaceRec
             InitializeComponent();
             //Load haarcascades for face detection
             face = new HaarCascade("haarcascade_frontalface_default.xml");
-            //eye = new HaarCascade("haarcascade_eye.xml");
             try
             {
                 //Load of previus trainned faces and labels for each image
@@ -143,16 +133,14 @@ namespace MultiFaceRec
                     LoadFaces = "face" + tf + ".bmp";
                     trainingImages.Add(new Image<Gray, byte>(Application.StartupPath + "/TrainedFaces/" + LoadFaces));
                     labels.Add(Labels[tf]);
-                    CurrentStudent = Labels[tf];
                 }
             }
             catch(Exception e)
             {
-                MessageBox.Show("Nothing in binary database, please add at least a face(Simply train the prototype with the Add Face Button).", "Triained faces load", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Nothing in binary database, please register a student.", "Trained faces load", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
         }
-
 
         void FrameGrabber(object sender, EventArgs e)
         {
@@ -162,10 +150,10 @@ namespace MultiFaceRec
             //Get the current frame form capture device
             currentFrame = grabber.QueryFrame().Resize(320, 240, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
 
-                    //Convert it to Grayscale
+            //Convert it to Grayscale
             gray = currentFrame.Convert<Gray, Byte>();
 
-                    //Face Detector
+            //Face Detector
             MCvAvgComp[][] facesDetected = gray.DetectHaarCascade(
             face,
             1.2,
@@ -181,7 +169,6 @@ namespace MultiFaceRec
                 //draw the face detected in the 0th (gray) channel with blue color
                 currentFrame.Draw(f.rect, new Bgr(Color.Red), 2);
 
-
                 if (trainingImages.ToArray().Length != 0)
                 {
                     MCvTermCriteria termCrit = new MCvTermCriteria(ContTrain, 0.001);
@@ -193,7 +180,7 @@ namespace MultiFaceRec
                     ref termCrit);
 
                     name = recognizer.Recognize(result);
-                
+                    CurrentStudent = name;
                     //Draw the label for each face detected and recognized
                     currentFrame.Draw(name, ref font, new Point(f.rect.X - 2, f.rect.Y - 2), new Bgr(Color.LightGreen));
                 }
