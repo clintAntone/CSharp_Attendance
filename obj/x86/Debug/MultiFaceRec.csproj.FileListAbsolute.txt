@@ -14,9 +14,6 @@ C:\Users\Hp\Downloads\kashipara.com_new-folder-zip\New folder\FaceRecProO\FaceRe
 C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\MultiFaceRec.exe.config
 C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\MultiFaceRec.exe
 C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\MultiFaceRec.pdb
-C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\Emgu.CV.xml
-C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\Emgu.CV.UI.xml
-C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\Emgu.Util.xml
 C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.csproj.AssemblyReference.cache
 C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.csproj.SuggestedBindingRedirects.cache
 C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.FrmPrincipal.resources

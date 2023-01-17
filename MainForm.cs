@@ -20,6 +20,7 @@ namespace MultiFaceRec
 {
     public partial class FrmPrincipal : Form
     {
+        string CurrentStudent = "";
         //Declararation of all variables, vectors and haarcascades
         Image<Bgr, Byte> currentFrame;
         Capture grabber;
@@ -34,7 +35,27 @@ namespace MultiFaceRec
         int ContTrain, NumLabels, t;
         string name, names = null;
 
-        private void button2_Click_1(object sender, EventArgs e)
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Student: " + CurrentStudent + " is now marked as PRESENT");
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            lblDateTime.Text = DateTime.Now.ToString("MMMM dd, yyyy hh:mm:ss tt");
+        }
+
+        private void button2_Click(object sender, EventArgs e)
         {
             try
             {
@@ -63,9 +84,9 @@ namespace MultiFaceRec
                 //test image with cubic interpolation type method
                 TrainedFace = result.Resize(100, 100, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
                 trainingImages.Add(TrainedFace);
-                if (textBox1.Text.Length != 0)
+                if (txtStudentID.Text.Length != 0)
                 {
-                    labels.Add(textBox1.Text);
+                    labels.Add(txtStudentID.Text);
                 }
                 else
                 {
@@ -75,7 +96,7 @@ namespace MultiFaceRec
                 //Show face added in gray scale
                 imageBox1.Image = TrainedFace;
 
-                //Write the number of triained faces in a file text for further load
+                //Write the number of registered faces in a file text for further load
                 File.WriteAllText(Application.StartupPath + "/TrainedFaces/TrainedLabels.txt", trainingImages.ToArray().Length.ToString() + "%");
 
                 //Write the labels of triained faces in a file text for further load
@@ -85,11 +106,12 @@ namespace MultiFaceRec
                     File.AppendAllText(Application.StartupPath + "/TrainedFaces/TrainedLabels.txt", labels.ToArray()[i - 1] + "%");
                 }
 
-                MessageBox.Show(textBox1.Text + "´s face detected and added :)", "Training OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(textBox1.Text + "´s face detected and added", "Registration Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             }
             catch
             {
-                MessageBox.Show("Enable the face detection first", "Training Fail", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Enable the face detection first", "Registration Failed!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -122,12 +144,11 @@ namespace MultiFaceRec
                     LoadFaces = "face" + tf + ".bmp";
                     trainingImages.Add(new Image<Gray, byte>(Application.StartupPath + "/TrainedFaces/" + LoadFaces));
                     labels.Add(Labels[tf]);
+                    CurrentStudent = Labels[tf];
                 }
-            
             }
             catch(Exception e)
             {
-                //MessageBox.Show(e.ToString());
                 MessageBox.Show("Nothing in binary database, please add at least a face(Simply train the prototype with the Add Face Button).", "Triained faces load", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
@@ -177,8 +198,8 @@ namespace MultiFaceRec
                            ref termCrit);
 
                         name = recognizer.Recognize(result);
-
-                            //Draw the label for each face detected and recognized
+                        
+                        //Draw the label for each face detected and recognized
                         currentFrame.Draw(name, ref font, new Point(f.rect.X - 2, f.rect.Y - 2), new Bgr(Color.LightGreen));
 
                         }
@@ -216,7 +237,7 @@ namespace MultiFaceRec
                         //Names concatenation of persons recognized
                     for (int nnn = 0; nnn < facesDetected[0].Length; nnn++)
                     {
-                        names = names + NamePersons[nnn] + ", ";
+                        names = names + NamePersons[nnn];
                     }
                     //Show the faces procesed and recognized
                     imageBoxFrameGrabber.Image = currentFrame;
