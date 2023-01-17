@@ -1,0 +1,28 @@
+D:\vb\code\FaceRecProOV\bin\Debug\MultiFaceRec.exe
+D:\vb\code\FaceRecProOV\bin\Debug\MultiFaceRec.pdb
+D:\vb\code\FaceRecProOV\bin\Debug\Emgu.CV.xml
+D:\vb\code\FaceRecProOV\bin\Debug\Emgu.CV.UI.xml
+D:\vb\code\FaceRecProOV\bin\Debug\Emgu.Util.xml
+D:\vb\code\FaceRecProOV\obj\x86\Debug\MultiFaceRec.csprojResolveAssemblyReference.cache
+D:\vb\code\FaceRecProOV\obj\x86\Debug\MultiFaceRec.FrmPrincipal.resources
+D:\vb\code\FaceRecProOV\obj\x86\Debug\MultiFaceRec.Properties.Resources.resources
+D:\vb\code\FaceRecProOV\obj\x86\Debug\MultiFaceRec.csproj.GenerateResource.Cache
+D:\vb\code\FaceRecProOV\obj\x86\Debug\MultiFaceRec.exe
+D:\vb\code\FaceRecProOV\obj\x86\Debug\MultiFaceRec.pdb
+C:\Users\Hp\Downloads\kashipara.com_new-folder-zip\New folder\FaceRecProO\FaceRecProOVc#\obj\x86\Debug\MultiFaceRec.exe
+C:\Users\Hp\Downloads\kashipara.com_new-folder-zip\New folder\FaceRecProO\FaceRecProOVc#\obj\x86\Debug\MultiFaceRec.pdb
+C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\MultiFaceRec.exe.config
+C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\MultiFaceRec.exe
+C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\MultiFaceRec.pdb
+C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\Emgu.CV.xml
+C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\Emgu.CV.UI.xml
+C:\Users\COLLABERA\Downloads\Attendance\bin\Debug\Emgu.Util.xml
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.csproj.AssemblyReference.cache
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.csproj.SuggestedBindingRedirects.cache
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.FrmPrincipal.resources
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.Properties.Resources.resources
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.csproj.GenerateResource.cache
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.csproj.CoreCompileInputs.cache
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.csproj.CopyComplete
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.exe
+C:\Users\COLLABERA\Downloads\Attendance\obj\x86\Debug\MultiFaceRec.pdb
