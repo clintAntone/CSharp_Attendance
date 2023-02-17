@@ -1,7 +1,4 @@
-﻿//Multiple face detection and recognition in real time
-//Using EmguCV cross platform .Net wrapper to the Intel OpenCV image processing library for C#.Net
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -9,92 +6,70 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using Emgu.CV.CvEnum;
 using System.IO;
-using System.Diagnostics;
+using MySqlConnector;
+using System.Data.SqlClient;
 
 namespace MultiFaceRec
 {
     public partial class FrmPrincipal : Form
     {
-        string CurrentStudent = "";
-        //Declararation of all variables, vectors and haarcascades
-        Image<Bgr, Byte> currentFrame;
         Capture grabber;
         HaarCascade face;
-        HaarCascade eye;
         MCvFont font = new MCvFont(FONT.CV_FONT_HERSHEY_TRIPLEX, 0.5d, 0.5d);
+        int ContTrain, NumLabels, t;
+        List<Image<Gray, byte>> trainingImages = new List<Image<Gray, byte>>();
+        List<string> labels = new List<string>();
+        List<string> NamePersons = new List<string>();
+
+        string CurrentStudent = "";
+        Image<Bgr, Byte> currentFrame;
         Image<Gray, byte> result, TrainedFace = null;
         Image<Gray, byte> gray = null;
-        List<Image<Gray, byte>> trainingImages = new List<Image<Gray, byte>>();
-        List<string> labels= new List<string>();
-        List<string> NamePersons = new List<string>();
-        int ContTrain, NumLabels, t;
-        string name, names = null;
 
+        private Timer timer = new Timer();
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Student: " + CurrentStudent + " is now marked as PRESENT");
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            lblDateTime.Text = DateTime.Now.ToString("MMMM dd, yyyy hh:mm:ss tt");
-        }
+        string connectionString = "server=localhost;uid=root;pwd=;database=ams;";
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string log;
             try
             {
-                //Trained face counter
-                ContTrain = ContTrain + 1;
-
-                //Get a gray frame from capture device
+                string log;
+                ContTrain++;
                 gray = grabber.QueryGrayFrame().Resize(320, 240, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
+                TrainedFace = DetectFace(gray);
 
-                //Face Detector
-                MCvAvgComp[][] facesDetected = gray.DetectHaarCascade(
-                face,
-                1.2,
-                10,
-                Emgu.CV.CvEnum.HAAR_DETECTION_TYPE.DO_CANNY_PRUNING,
-                new Size(20, 20));
-
-                //Action for each element detected
-                foreach (MCvAvgComp f in facesDetected[0])
+                if (TrainedFace == null)
                 {
-                    TrainedFace = currentFrame.Copy(f.rect).Convert<Gray, byte>();
-                    break;
-                }
-
-                //resize face detected image for force to compare the same size with the 
-                //test image with cubic interpolation type method
-                TrainedFace = result.Resize(100, 100, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
-                trainingImages.Add(TrainedFace);
-                if (txtStudentID.Text.Length != 0)
-                {
-                    labels.Add(txtStudentID.Text);
-                }
-                else
-                {
+                    MessageBox.Show("No face was detected.", "Registration Failed!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
 
-                //Show face added in gray scale
-                imageBox1.Image = TrainedFace;
+                trainingImages.Add(TrainedFace);
 
-                //Write the number of registered faces in a file text for further load
-                File.WriteAllText(Application.StartupPath + "/TrainedFaces/TrainedLabels.txt", trainingImages.ToArray().Length.ToString() + "%");
-
-                //Write the labels of triained faces in a file text for further load
-                for (int i = 1; i < trainingImages.ToArray().Length + 1; i++)
+                if (string.IsNullOrEmpty(txtStudentID.Text))
                 {
-                    trainingImages.ToArray()[i - 1].Save(Application.StartupPath + "/TrainedFaces/face" + i + ".bmp");
-                    File.AppendAllText(Application.StartupPath + "/TrainedFaces/TrainedLabels.txt", labels.ToArray()[i - 1] + "%");
+                    MessageBox.Show("Please enter a student ID.", "Registration Failed!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
                 }
 
-                MessageBox.Show(" Student: " + txtStudentID.Text + " registered successfully", "Registration Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                log = "Student: " + txtStudentID.Text + " registered successfully";
+                labels.Add(txtStudentID.Text);
+                imageBox1.Image = TrainedFace;
+
+                if (!Directory.Exists("TrainedFaces")){ Directory.CreateDirectory("TrainedFaces");}
+
+                File.WriteAllText($"{Application.StartupPath}/TrainedFaces/TrainedLabels.txt", $"{trainingImages.ToArray().Length}%");
+
+                for (int i = 1; i <= trainingImages.ToArray().Length; i++)
+                {
+                    trainingImages.ToArray()[i - 1].Save($"{Application.StartupPath}/TrainedFaces/face{i}.bmp");
+                    File.AppendAllText($"{Application.StartupPath}/TrainedFaces/TrainedLabels.txt", $"{labels.ToArray()[i - 1]}%");
+                }
+
+                MessageBox.Show($"Student: {txtStudentID.Text} registered successfully", "Registration Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                log = $"Student: {txtStudentID.Text} registered successfully";
+
+                SaveDataToMySQL(txtStudentID.Text,txtName.Text);
                 txtLog.Text = log;
                 imageBox1.Image = null;
             }
@@ -105,23 +80,40 @@ namespace MultiFaceRec
             }
         }
 
+        private Image<Gray, byte> DetectFace(Image<Gray, byte> gray)
+        {
+            try
+            {
+                MCvAvgComp[][] facesDetected = gray.DetectHaarCascade(face, 1.2, 10, Emgu.CV.CvEnum.HAAR_DETECTION_TYPE.DO_CANNY_PRUNING, new Size(20, 20));
+
+                foreach (MCvAvgComp f in facesDetected[0])
+                {
+                    TrainedFace = currentFrame.Copy(f.rect).Convert<Gray, byte>();
+                    break;
+                }
+
+                return result.Resize(100, 100, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message.ToString());
+                return null;
+            }
+        }
+
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
-            //Initialize the capture device
             grabber = new Capture();
             grabber.QueryFrame();
-            //Initialize the FrameGraber event
             Application.Idle += new EventHandler(FrameGrabber);
         }
 
         public FrmPrincipal()
         {
             InitializeComponent();
-            //Load haarcascades for face detection
             face = new HaarCascade("haarcascade_frontalface_default.xml");
             try
             {
-                //Load of previus trainned faces and labels for each image
                 string Labelsinfo = File.ReadAllText(Application.StartupPath + "/TrainedFaces/TrainedLabels.txt");
                 string[] Labels = Labelsinfo.Split('%');
                 NumLabels = Convert.ToInt16(Labels[0]);
@@ -139,74 +131,97 @@ namespace MultiFaceRec
             {
                 MessageBox.Show("Nothing in binary database, please register a student.", "Trained faces load", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
-
         }
 
-        void FrameGrabber(object sender, EventArgs e)
+        private void FrameGrabber(object sender, EventArgs e)
         {
             label3.Text = "0";
             NamePersons.Add("");
-
-            //Get the current frame form capture device
             currentFrame = grabber.QueryFrame().Resize(320, 240, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
-
-            //Convert it to Grayscale
             gray = currentFrame.Convert<Gray, Byte>();
 
-            //Face Detector
-            MCvAvgComp[][] facesDetected = gray.DetectHaarCascade(
-            face,
-            1.2,
-            10,
-            Emgu.CV.CvEnum.HAAR_DETECTION_TYPE.DO_CANNY_PRUNING,
-            new Size(20, 20));
+            MCvAvgComp[][] facesDetected = gray.DetectHaarCascade(face, 1.2, 10, Emgu.CV.CvEnum.HAAR_DETECTION_TYPE.DO_CANNY_PRUNING, new Size(20, 20));
 
-            //Action for each element detected
-            foreach (MCvAvgComp f in facesDetected[0])
+            if (facesDetected[0].Length == 0)
             {
-                t = t + 1;
-                result = currentFrame.Copy(f.rect).Convert<Gray, byte>().Resize(100, 100, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
-                //draw the face detected in the 0th (gray) channel with blue color
-                currentFrame.Draw(f.rect, new Bgr(Color.Red), 2);
-
-                if (trainingImages.ToArray().Length != 0)
+                listBoxNames.Items.Clear();
+            }
+            else
+            {
+                foreach (MCvAvgComp f in facesDetected[0])
                 {
-                    MCvTermCriteria termCrit = new MCvTermCriteria(ContTrain, 0.001);
-                    //Eigen face recognizer
-                    EigenObjectRecognizer recognizer = new EigenObjectRecognizer(
-                    trainingImages.ToArray(),
-                    labels.ToArray(),
-                    3000,
-                    ref termCrit);
+                    string name = "";
+                    t = t + 1;
+                    result = currentFrame.Copy(f.rect).Convert<Gray, byte>().Resize(100, 100, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
+                    currentFrame.Draw(f.rect, new Bgr(Color.Red), 2);
 
-                    name = recognizer.Recognize(result);
-                    CurrentStudent = name;
-                    //Draw the label for each face detected and recognized
-                    currentFrame.Draw(name, ref font, new Point(f.rect.X - 2, f.rect.Y - 2), new Bgr(Color.LightGreen));
+                    if (trainingImages.ToArray().Length != 0)
+                    {
+                        MCvTermCriteria termCrit = new MCvTermCriteria(ContTrain, 0.001);
+                        EigenObjectRecognizer recognizer = new EigenObjectRecognizer(trainingImages.ToArray(), labels.ToArray(), 3000, ref termCrit);
+                        name = recognizer.Recognize(result);
+                        CurrentStudent = name;
+                        currentFrame.Draw(name, ref font, new Point(f.rect.X - 2, f.rect.Y - 2), new Bgr(Color.LightGreen));
+                    }
+                    NamePersons[t - 1] = name;
+                    NamePersons.Add("");
+                    label3.Text = facesDetected[0].Length.ToString();
+
+                    // Add the recognized name to the ListBox
+                    if (!string.IsNullOrEmpty(name) && !listBoxNames.Items.Contains(name))
+                    {
+                        listBoxNames.Items.Add(name);
+                    }
                 }
-
-                NamePersons[t-1] = name;
-                NamePersons.Add("");
-
-                //Set the number of faces detected on the scene
-                label3.Text = facesDetected[0].Length.ToString();
-
+                if (facesDetected[0].Length > 0)
+                {
+                    string[] nameList = NamePersons.ToArray();
+                    listBoxNames.SelectedItem = nameList[0];
+                }
             }
-                        
+
             t = 0;
-
-            //Names concatenation of persons recognized
-            for (int nnn = 0; nnn < facesDetected[0].Length; nnn++)
-            {
-                names = names + NamePersons[nnn];
-            }
-            //Show the faces procesed and recognized
             imageBoxFrameGrabber.Image = currentFrame;
-            label4.Text = names;
-            names = "";
             NamePersons.Clear();
+        }
 
-        }    
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (listBoxNames.SelectedItem != null)
+            {
+                string selectedName = listBoxNames.SelectedItem.ToString();
+                MessageBox.Show("Student: " + selectedName + " is now marked as PRESENT");
+            }
+            else
+            {
+                MessageBox.Show("No student selected");
+            }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            lblDateTime.Text = DateTime.Now.ToString("MMMM dd, yyyy hh:mm:ss tt");
+        }
+
+
+
+        private void SaveDataToMySQL(string studentNumber, string name)
+        { 
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "INSERT INTO students (studentNumber, name) VALUES (@studentNumber, @name)";
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@studentNumber", studentNumber);
+                    command.Parameters.AddWithValue("@name", name);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
 
     }
 }
